@@ -1,0 +1,17 @@
+bundle:
+  name: python_package
+
+include:
+  - resources/*.yml
+
+artifacts:
+  default:
+    type: whl
+    path: .
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-1666302976490045.5.azuredatabricks.net
