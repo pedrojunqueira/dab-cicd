@@ -2,8 +2,6 @@ name: "Prod deployment"
 
 concurrency: 1
 
-# Trigger this workflow whenever a pull request is pushed to the repo's
-# main branch.
 on:
   push:
     branches:
@@ -48,27 +46,3 @@ jobs:
         env:
           DATABRICKS_TOKEN: ${{ secrets.SP_TOKEN }}
           DATABRICKS_BUNDLE_ENV: prod
-
-  # Validate, deploy, and then run the bundle.
-  pipeline_update:
-    name: "Run pipeline update"
-    runs-on: ubuntu-latest
-
-    Run the "deploy" job first.
-    needs:
-      - deploy
-
-    steps:
-      # Check out this repo, so that this workflow can access it.
-      - uses: actions/checkout@v3
-
-      # Use the downloaded Databricks CLI.
-      - uses: databricks/setup-cli@main
-
-      # Run the Databricks workflow named "my-job" as defined in the
-      # bundle that was just deployed.
-      - run: databricks bundle run python_package_job
-        working-directory: .
-        env:
-          DATABRICKS_TOKEN: ${{ secrets.SP_TOKEN }}
-          DATABRICKS_BUNDLE_ENV: dev
