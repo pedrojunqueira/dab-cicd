@@ -350,8 +350,6 @@ name: "Prod deployment"
 
 concurrency: 1
 
-# Trigger this workflow whenever a pull request is pushed to the repo's
-# main branch.
 on:
   push:
     branches:
@@ -383,6 +381,8 @@ jobs:
   deploy:
     name: "Deploy bundle"
     runs-on: ubuntu-latest
+    needs:
+      - test_package
 
     steps:
       - uses: actions/checkout@v3
@@ -394,30 +394,6 @@ jobs:
         env:
           DATABRICKS_TOKEN: ${{ secrets.SP_TOKEN }}
           DATABRICKS_BUNDLE_ENV: prod
-
-  # Validate, deploy, and then run the bundle.
-  pipeline_update:
-    name: "Run pipeline update"
-    runs-on: ubuntu-latest
-
-    # Run the "deploy" job first.
-    needs:
-      - deploy
-
-    steps:
-      # Check out this repo, so that this workflow can access it.
-      - uses: actions/checkout@v3
-
-      # Use the downloaded Databricks CLI.
-      - uses: databricks/setup-cli@main
-
-      # Run the Databricks workflow named "my-job" as defined in the
-      # bundle that was just deployed.
-      - run: databricks bundle run python_package_job
-        working-directory: .
-        env:
-          DATABRICKS_TOKEN: ${{ secrets.SP_TOKEN }}
-          DATABRICKS_BUNDLE_ENV: dev
 ```
 
 8. Add a prod target to your databricks.yaml file
@@ -433,10 +409,10 @@ targets:
   prod:
     mode: production
     workspace:
-      host: <workspaceurl-prod>
+      host: <workspaceurl-dev>
       root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
     run_as:
-      service_principal_name: <sp-uuid>
+      service_principal_name: <service-principal-uuid>
 ```
 
 9. commit and push your code to the master branch
